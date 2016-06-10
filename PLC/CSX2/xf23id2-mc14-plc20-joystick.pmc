@@ -1,0 +1,206 @@
+CLOSE
+
+;###############################################################################
+; Operate a CRL bypass controlled through an input bit.
+; Original Author: Kazimierz Gofron
+; 
+; Updates: 2015/4/09 - Kaz Gofron
+;          * Add check of limit switches
+; 
+; Macros:
+;   PLC = 20              ; The PLC to use
+;   BYPASS = 1          ; The M variable that points to the CRL bypass EPS input bit of 2nd motor (pin 20/9 common)
+;   MOTOR = 2          ; The motor that the bypass operates on
+;   APPLY = 0          ; The value to read to apply the CRL bypass
+;   RELEASE = 1      ; The value to read to allow normal operation
+; 
+; The PLC performs following tasks:
+;     If the GPIO input 1 is closed (M0=1) motor is fully controlled
+;     If both limits are active, the motor remains in normal operation state
+;     If the GPIO input 1 is opened (M0=0) motor moves to positive limit  (bypass state)
+; 
+; P variable use:
+;    P1601    ; The current CRL bypass state;
+;	Motor	Forward	ForLatch		Reverse	RevLatch
+;	1		M0=1	P200,P201		M1=1	P202,P203
+;	2		M2=1	P204,P205		M3=1	P206,P207
+;	3		M4=1	P208,P209		M5=1	P210,P211
+;	4		M6=1	P212,P213		M7=1	P214,P215
+;     
+;###############################################################################
+; enable E-stop
+I35=1
+P200..216=0
+
+OPEN PLC 20
+CLEAR
+
+; Motor#1 positive motion use P200, P201 (latch), and M0, M1 (DI= direction)
+; Is the motion enabled?
+IF(M0 = 1)
+  ; Motion latch was not started
+  AND (P200 = 0)
+  ; Check limit switches
+  AND (M131 = 0 OR M132 = 0)
+  ; No following error
+  AND (M142=0)
+	cmd "#1J+"
+	P200 = 1
+	P201 = 0
+ELSE 
+	IF(M0=0)
+	AND (P201=0)
+		cmd "#1J/"
+		P200 = 0
+		P201 = 1
+	ENDIF
+ENDIF
+; Motor#1 negative motion use P202, P203
+; Is the motion enabled?
+IF(M1 = 1)
+  ; Motion latch was not started
+  AND (P202 = 0)
+  ; Check limit switches
+  AND (M131 = 0 OR M132 = 0)
+  ; No following error
+  AND (M142=0)
+	cmd "#1J-"
+	P202 = 1
+	P203 = 0
+ELSE 
+	IF(M1=0)
+	AND (P203=0)
+		cmd "#1J/"
+		P202 = 0
+		P203 = 1
+	ENDIF
+ENDIF
+
+; Motor#2 positive motion use P204, P205 (latch), and M2, M3 (DI= direction)
+; Is the motion enabled?
+IF(M2 = 1)
+  ; Motion latch was not started
+  AND (P204 = 0)
+  ; Check limit switches
+  AND (M231 = 0 OR M232 = 0)
+  ; No following error
+  AND (M242=0)
+	cmd "#2J+"
+	P204 = 1
+	P205 = 0
+ELSE 
+	IF(M2=0)
+	AND (P205=0)
+		cmd "#2J/"
+		P204 = 0
+		P205 = 1
+	ENDIF
+ENDIF
+; Motor#2 negative motion use P206, P207
+; Is the motion enabled?
+IF(M3 = 1)
+  ; Motion latch was not started
+  AND (P206 = 0)
+  ; Check limit switches
+  AND (M231 = 0 OR M232 = 0)
+  ; No following error
+  AND (M242=0)
+	cmd "#2J-"
+	P206 = 1
+	P207 = 0
+ELSE 
+	IF(M3=0)
+	AND (P207=0)
+		cmd "#2J/"
+		P206 = 0
+		P207 = 1
+	ENDIF
+ENDIF
+
+; Motor#3 positive motion use P208, P209 (latch), and M4, M5 (DI= direction)
+; Is the motion enabled?
+IF(M4 = 1)
+  ; Motion latch was not started
+  AND (P208 = 0)
+  ; Check limit switches
+  AND (M331 = 0 OR M332 = 0)
+  ; No following error
+  AND (M342=0)
+	cmd "#3J+"
+	P208 = 1
+	P209 = 0
+ELSE 
+	IF(M4=0)
+	AND (P209=0)
+		cmd "#3J/"
+		P208 = 0
+		P209 = 1
+	ENDIF
+ENDIF
+; Motor#3 negative motion use P210, P211
+; Is the motion enabled?
+IF(M5 = 1)
+  ; Motion latch was not started
+  AND (P210 = 0)
+  ; Check limit switches
+  AND (M331 = 0 OR M332 = 0)
+  ; No following error
+  AND (M342=0)
+	cmd "#3J-"
+	P210 = 1
+	P211 = 0
+ELSE 
+	IF(M5=0)
+	AND (P211=0)
+		cmd "#3J/"
+		P210 = 0
+		P211 = 1
+	ENDIF
+ENDIF
+
+; Motor#4 positive motion use P212, P213 (latch), and M6, M7 (DI= direction)
+; Is the motion enabled?
+IF(M6 = 1)
+  ; Motion latch was not started
+  AND (P212 = 0)
+  ; Check limit switches
+  AND (M431 = 0 OR M432 = 0)
+  ; No following error
+  AND (M442=0)
+	cmd "#4J+"
+	P212 = 1
+	P213 = 0
+ELSE 
+	IF(M6=0)
+	AND (P213=0)
+		cmd "#4J/"
+		P212 = 0
+		P213 = 1
+	ENDIF
+ENDIF
+; Motor#4 negative motion use P214, P215
+; Is the motion enabled?
+IF(M7 = 1)
+  ; Motion latch was not started
+  AND (P214 = 0)
+  ; Check limit switches
+  AND (M431 = 0 OR M432 = 0)
+  ; No following error
+  AND (M442=0)
+	cmd "#4J-"
+	P214 = 1
+	P215 = 0
+ELSE 
+	IF(M7=0)
+	AND (P215=0)
+		cmd "#4J/"
+		P214 = 0
+		P215 = 1
+	ENDIF
+ENDIF
+
+
+CLOSE
+
+ENABLE PLC 20
+
